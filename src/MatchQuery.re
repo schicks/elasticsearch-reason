@@ -46,33 +46,15 @@ let serialize = (match: content) => [
     ("analyzer", Belt.Option.map(match.options.analyzer, Js.Json.string)),
     ("auto_generate_synonyms_phrase_query", Belt.Option.map(match.options.auto_generate_synonyms_phrase_query, Js.Json.boolean)),
     ("fuzzy_transpositions", Belt.Option.map(match.options.fuzzy_transpositions, Js.Json.boolean)),
-    ("fuzziness", Belt.Option.map(match.options.fuzziness, (fuzz) => switch (fuzz) {
-        | Zero => Js.Json.number(0.)
-        | One => Js.Json.number(1.)
-        | Two => Js.Json.number(2.)
-        | Auto => Js.Json.string("auto")
-    })),
-    ("max_expansions", Belt.Option.map(match.options.max_expansions, (unwrapInt >> Belt.Int.toFloat >> Js.Json.number))),
-    ("prefix_length", Belt.Option.map(match.options.prefix_length, (unwrapInt >> Belt.Int.toFloat >> Js.Json.number))),
+    ("fuzziness", Belt.Option.map(match.options.fuzziness, Primitives.serializeLevenshtein)),
+    ("max_expansions", Belt.Option.map(match.options.max_expansions, Primitives.serializeMaxExpansions)),
+    ("prefix_length", Belt.Option.map(match.options.prefix_length, Primitives.serializePrefixLength)),
     ("transpositions", Belt.Option.map(match.options.transpositions, Js.Json.boolean)),
-    ("fuzzy_rewrite", Belt.Option.map(match.options.fuzzy_rewrite, (rewrite) => switch (rewrite) {
-        | ConstantScore => Js.Json.string("constant_score")
-        | ConstantScoreBoolean => Js.Json.string("constant_score_boolean")
-        | ScoringBoolean => Js.Json.string("scoring_boolean")
-        | TopTermsBlendedFreqs(Positive(n)) =>  Js.Json.string("top_terms_blended_freqs_" ++ Belt.Int.toString(n))
-        | TopTermsBoost(Positive(n)) => Js.Json.string("top_terms_boost_" ++ Belt.Int.toString(n))
-        | TopTerms(Positive(n)) => Js.Json.string("top_terms_" ++ Belt.Int.toString(n))
-    })),
+    ("fuzzy_rewrite", Belt.Option.map(match.options.fuzzy_rewrite, Primitives.serializeRewrite)),
     ("lenient", Belt.Option.map(match.options.lenient, Js.Json.boolean)),
-    ("operator", Belt.Option.map(match.options.operator, (operator) => switch (operator) {
-        | Or => Js.Json.string("OR")
-        | And => Js.Json.string("AND")
-    })),
+    ("operator", Belt.Option.map(match.options.operator, Primitives.serializeOperator)),
     ("minimum_should_match", Belt.Option.map(match.options.minimum_should_match, Primitives.serializeMsm)),
-    ("zero_terms_query", Belt.Option.map(match.options.zero_terms_query, (q) => switch (q) {
-        | None => Js.Json.string("none")
-        | All => Js.Json.string("all")
-    })),
+    ("zero_terms_query", Belt.Option.map(match.options.zero_terms_query, Primitives.serializeZeroTermsBehavior)),
 ]
 |> List.fold_left((acc, a) => switch (a) {
     | (key, Some(el)) => [(key, el), ...acc]

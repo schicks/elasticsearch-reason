@@ -41,7 +41,7 @@ describe("Query construction", () => {
                         ])
                         |> Js.Json.object_
                         |> Js.Json.stringify
-                        |> (d) => {Js.Console.log(d); d}
+                        // |> (d) => {Js.Console.log(d); d}
                         |> Fetch.BodyInit.make,
                         ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
                         ()

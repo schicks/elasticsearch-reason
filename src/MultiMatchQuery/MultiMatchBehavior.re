@@ -15,7 +15,7 @@ type behavior =
 
 let formatBehavior = (b) => switch (b) {
     | Best(content) => [("type", Js.Json.string("best_fields"))]
-    | Most(content) => [("type", Js.Json.string("most_fields"))]
+    | Most(content) => [("type", Js.Json.string("most_fields")), ...Most.format(content)]
     | Cross(content) => [("type", Js.Json.string("cross_fields"))]
     | Phrase(content) => [("type", Js.Json.string("phrase"))]
     | PhrasePrefix(content) => [("type", Js.Json.string("phrase_prefix"))]
