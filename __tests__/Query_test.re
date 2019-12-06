@@ -11,12 +11,19 @@ let basicQuery = MatchQuery.{
             field: "csTitle"
         }
 
-describe("Match queries", () => {
+describe("Query construction", () => {
     open Expect;
 
     [
         match(basicQuery),
-        match(~options={...MatchQuery.noOptions, operator: Some(And)}, basicQuery)
+        match(~options={...MatchQuery.noOptions, operator: Some(And)}, basicQuery),
+        Boolean({
+            should: [match(basicQuery)],
+            must: [],
+            filter: [],
+            must_not: [],
+            minimum_should_match: None
+        })
     ] |> each(
         (query) => testPromise("It should generate well formed queries", () => {
             Js.Promise.(
@@ -29,7 +36,7 @@ describe("Match queries", () => {
                         ])
                         |> Js.Json.object_
                         |> Js.Json.stringify
-                        // |> (d) => {Js.Console.log(d); d}
+                        |> (d) => {Js.Console.log(d); d}
                         |> Fetch.BodyInit.make,
                         ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
                         ()

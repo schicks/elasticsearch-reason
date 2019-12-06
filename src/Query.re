@@ -37,3 +37,8 @@ let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     }
     |> Js.Dict.fromList
     |> Js.Json.object_
+    |> (content) => {
+        Js.Dict.fromList([
+            ("bool", content)
+        ]) |> Js.Json.object_
+    }
