@@ -30,6 +30,10 @@ describe("Query construction", () => {
             must_not: [],
             minimum_should_match: None
         }),
+        DisMax({
+            queries: [match(basicQuery)],
+            tie_breaker: None
+        }),
         MultiMatch({
             query: "python",
             fields: [{name: "csTitle", weight: positiveNumber(7.)}],

@@ -1,7 +1,14 @@
+open Domain
+
 type query =
     | Match(MatchQuery.content)
     | MultiMatch(MultiMatchQuery.content)
     | Boolean(booleanContent)
+    | DisMax(disMaxContent)
+and disMaxContent = {
+    queries: list(query),
+    tie_breaker: option(positiveNumber)
+}
 and booleanContent = {
     must: list(query),
     filter: list(query),
@@ -15,9 +22,11 @@ let match = (~options=MatchQuery.noOptions, required) => Match(MatchQuery.{requi
 
 let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Boolean(content) => serializeBoolean(content)
+    | DisMax(content) => serializeDisMax(content)
     | Match(content) => MatchQuery.serialize(content)
     | MultiMatch(content) => MultiMatchQuery.serialize(content)
-} and serializeBoolean = (content) => [
+} 
+and serializeBoolean = (content) => [
         ("must", content.must),
         ("filter", content.filter),
         ("should", content.should),
@@ -42,3 +51,18 @@ let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
             ("bool", content)
         ]) |> Js.Json.object_
     }
+and serializeDisMax = (q) => {
+    let queries = (
+        "queries",
+        q.queries |> List.map(serializeQuery) |> Array.of_list |> Js.Json.array
+    );
+
+    let content = switch (q.tie_breaker) {
+        | Some(Positive(n)) => [queries, ("tie_breaker", Js.Json.number(n))]
+        | None => [queries]
+    } |> Js.Dict.fromList |> Js.Json.object_
+
+    Js.Dict.fromList([
+        ("dis_max", content)
+    ]) |> Js.Json.object_
+}
