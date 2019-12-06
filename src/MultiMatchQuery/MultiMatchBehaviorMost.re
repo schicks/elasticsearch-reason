@@ -42,6 +42,6 @@ module Most = {
         |> List.fold_left((acc, a) => switch (a) {
             | (key, Some(el)) => [(key, el), ...acc]
             | (_, None) => acc
-        }, [("type", Js.Json.string("most"))])
+        }, [("type", Js.Json.string("most_fields"))])
     }
 }

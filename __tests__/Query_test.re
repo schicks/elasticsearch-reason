@@ -27,7 +27,10 @@ describe("Query construction", () => {
         MultiMatch({
             query: "python",
             fields: [{name: "csTitle", weight: positiveNumber(7.)}],
-            behavior: None
+            behavior: MultiMatchBehavior.most({
+                ...MultiMatchBehavior.Most.noOptions,
+                fuzziness: Some(Primitives.Auto)
+            })
         })
     ] |> each(
         (query) => testPromise("It should generate well formed queries", () => {

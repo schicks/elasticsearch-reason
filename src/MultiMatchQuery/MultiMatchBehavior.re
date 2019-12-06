@@ -13,6 +13,8 @@ type behavior =
     | PhrasePrefix(PhrasePrefix.content)
     | BoolPrefix(BoolPrefix.content)
 
+let most = (content) => Some(Most(content))
+
 let formatBehavior = (b) => switch (b) {
     | Best(content) => [("type", Js.Json.string("best_fields"))]
     | Most(content) => [("type", Js.Json.string("most_fields")), ...Most.format(content)]
