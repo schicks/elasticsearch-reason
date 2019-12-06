@@ -1,6 +1,8 @@
 
 let (>>) = (f, g, x) => g(f(x))
 
+let each = (f,l) => l |> List.fold_left((_acc, a) => f(a), ())
+
 type positiveInt = | Positive(int);
 let positiveInt = (n) =>  n > 0 ? Some(Positive(n)) : None;
 let unwrapInt = (n) => switch (n) {

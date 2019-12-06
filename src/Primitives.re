@@ -12,14 +12,24 @@ and msmExpression =
 let serializeMsm = (msm) => {
     let pSimple = (simple) => switch (simple) {
         | Number(n) => Belt.Int.toString(n)
-        | Percentage(n) => Belt.Int.toString(n)
+        | Percentage(n) => Belt.Int.toString(n) ++ {|%|}
     };
+    let pCombination = (n, simple) => Belt.Int.toString(unwrapInt(n)) ++ "<" ++ pSimple(simple);
 
     switch (msm) {
         | Single(simple) => pSimple(simple)
-        | Combination(Positive(n), simple) => Belt.Int.toString(n) ++ "<" ++ pSimple(simple)
+        | Combination(n, simple) => pCombination(n, simple)
         | MultipleCombination(combinations) => List.fold_left(
-            (acc, (n: positiveInt, simple)) => acc ++ " " ++ Belt.Int.toString(unwrapInt(n)) ++ "<-" ++ pSimple(simple),
+            (
+                acc, 
+                (n: positiveInt, simple)
+            ) => {
+                let nextExpr = pCombination(n, simple)
+                switch (acc) {
+                | "" => acc ++ nextExpr
+                | _ => acc ++ " " ++ nextExpr
+                }
+            },
             "",
             combinations
         )

@@ -4,8 +4,6 @@ open Domain;
 open Jest;
 open Query;
 
-let each = (f,l) => l |> List.fold_left((_acc, a) => f(a), ())
-
 let basicQuery = MatchQuery.{
             query: "python",
             field: "csTitle"
