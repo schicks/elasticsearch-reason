@@ -23,13 +23,7 @@ describe("Query construction", () => {
             },
             basicQuery
         ),
-        Boolean({
-            should: [match(basicQuery)],
-            must: [],
-            filter: [],
-            must_not: [],
-            minimum_should_match: None
-        }),
+        Boolean({...emptyBoolean, should: [match(basicQuery)]}),
         DisMax({
             queries: [match(basicQuery)],
             tie_breaker: None

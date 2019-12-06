@@ -13,7 +13,12 @@ type behavior =
     | PhrasePrefix(PhrasePrefix.content)
     | BoolPrefix(BoolPrefix.content)
 
+let best = (content) => Some(Best(content))
 let most = (content) => Some(Most(content))
+let cross = (content) => Some(Cross(content))
+let phrase = (content) => Some(Phrase(content))
+let phrasePrefix = (content) => Some(PhrasePrefix(content))
+let boolPrefix = (content) => Some(BoolPrefix(content))
 
 let formatBehavior = (b) => switch (b) {
     | Best(content) => [("type", Js.Json.string("best_fields")), ...Best.format(content)]

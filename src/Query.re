@@ -17,6 +17,27 @@ and booleanContent = {
     minimum_should_match: option(Primitives.msmExpression)
 }
 
+let emptyBoolean = {
+    must: [],
+    filter: [],
+    should: [],
+    must_not: [],
+    minimum_should_match: None
+}
+let boolean = ( // Worth creating, but not convinced that this would ever be a better api than straight record creation
+    ~must=[],
+    ~filter=[],
+    ~should=[],
+    ~must_not=[],
+    ~minimum_should_match=None,
+    ()
+) => Boolean({
+    must,
+    filter,
+    should,
+    must_not,
+    minimum_should_match
+})
 
 let match = (~options=MatchQuery.noOptions, required) => Match(MatchQuery.{required, options})
 
