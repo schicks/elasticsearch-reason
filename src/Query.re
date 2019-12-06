@@ -1,6 +1,6 @@
 type query =
     | Match(MatchQuery.content)
-    // | MultiMatch(MultiMatch.content)
+    | MultiMatch(MultiMatchQuery.content)
     | Boolean(booleanContent)
 and booleanContent = {
     must: list(query),
@@ -16,7 +16,7 @@ let match = (~options=MatchQuery.noOptions, required) => Match(MatchQuery.{requi
 let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Boolean(content) => serializeBoolean(content)
     | Match(content) => MatchQuery.serialize(content)
-    // | MultiMatch(content) => MultiMatch.serialize(content)
+    | MultiMatch(content) => MultiMatchQuery.serialize(content)
 } and serializeBoolean = (content) => [
         ("must", content.must),
         ("filter", content.filter),

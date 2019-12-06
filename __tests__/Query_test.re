@@ -23,6 +23,11 @@ describe("Query construction", () => {
             filter: [],
             must_not: [],
             minimum_should_match: None
+        }),
+        MultiMatch({
+            query: "python",
+            fields: [{name: "csTitle", weight: positiveNumber(7.)}],
+            behavior: None
         })
     ] |> each(
         (query) => testPromise("It should generate well formed queries", () => {
