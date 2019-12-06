@@ -1,11 +1,28 @@
 open Domain
 
+type nestedScoreMode = 
+    | Average // Default
+    | Max
+    | Min
+    | Zero // Renamed from None for type sanity
+    | Sum
+type nestedOptions = {
+    score_mode: option(nestedScoreMode),
+    ignore_unmapped: option(bool)
+}
+
 type query =
     | Match(MatchQuery.content)
     | MultiMatch(MultiMatchQuery.content)
     | Boolean(booleanContent)
     | DisMax(disMaxContent)
+    | Nested(nestedContent)
     | MatchAll
+and nestedContent = {
+    query: query,
+    path: string,
+    options: option(nestedOptions)
+}
 and disMaxContent = {
     queries: list(query),
     tie_breaker: option(positiveNumber)
@@ -50,6 +67,7 @@ let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Match(content) => MatchQuery.serialize(content)
     | MultiMatch(content) => MultiMatchQuery.serialize(content)
     | MatchAll => Js.Dict.fromList([("match_all", Js.Json.object_(empty_object))]) |> Js.Json.object_
+    | Nested(content) => serializeNested(content)
 } 
 and serializeBoolean = (content) => [
         ("must", content.must),
@@ -89,5 +107,27 @@ and serializeDisMax = (q) => {
 
     Js.Dict.fromList([
         ("dis_max", content)
+    ]) |> Js.Json.object_
+}
+and serializeNested = (q) => {
+    let required = [("query", serializeQuery(q.query))]
+    let content = switch (q.options) {
+        | Some(queryOptions) => [
+            ("ignore_unmapped", Belt.Option.map(queryOptions.ignore_unmapped, Js.Json.boolean)),
+            ("score_mode", Belt.Option.map(queryOptions.score_mode, (a) => switch (a) {
+                | Average => "avg"
+                | Max => "max"
+                | Min => "min"
+                | Zero => "none"
+                | Sum => "sum"
+            } |> Js.Json.string))
+        ] |> List.fold_left((acc, (key, v)) => switch (v) {
+            | Some(value) => [(key, value), ...acc]
+            | None => acc
+        }, required)
+        | None => required
+    } |> Js.Dict.fromList |> Js.Json.object_
+    Js.Dict.fromList([
+        ("nested", content)
     ]) |> Js.Json.object_
 }
