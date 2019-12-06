@@ -20,7 +20,8 @@
 
   ],
   "bs-dev-dependencies": [
-    "@glennsl/bs-jest"
+    "@glennsl/bs-jest",
+    "bs-fetch"
   ],
   "warnings": {
     "error" : "+101"

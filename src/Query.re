@@ -1,5 +1,3 @@
-open Domain;
-
 type query =
     | Match(MatchQuery.content)
     // | MultiMatch(MultiMatch.content)
@@ -13,9 +11,7 @@ and booleanContent = {
 }
 
 
-let match = MatchQuery.build >> (q) => Match(q) 
-// ^ This prevents any of the optional arguments from being taken.
-// The only way I can think to cope with that is to forward all of them explicitly, which feels bad.
+let match = (~options=MatchQuery.noOptions, required) => Match(MatchQuery.{required, options})
 
 let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Boolean(content) => serializeBoolean(content)

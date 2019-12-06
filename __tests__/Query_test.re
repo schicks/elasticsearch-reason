@@ -1,22 +1,42 @@
+[%raw "require('isomorphic-fetch')"]
+
+open Domain;
 open Jest;
 open Query;
+
+let each = (f,l) => l |> List.fold_left((_acc, a) => f(a), ())
+
+let basicQuery = MatchQuery.{
+            query: "python",
+            field: "csTitle"
+        }
 
 describe("Match queries", () => {
     open Expect;
 
-    [ // not really tests yet, just testing my understanding of how to run simd tests
-        match({
-            query: "python",
-            field: "csTitle"
-        }),
-        match({
-            query: "python",
-            field: "csTitle"
+    [
+        match(basicQuery),
+        match(~options={...MatchQuery.noOptions, operator: Some(And)}, basicQuery)
+    ] |> each(
+        (query) => testPromise("It should generate well formed queries", () => {
+            Js.Promise.(
+                Fetch.fetchWithInit(
+                    "http://localhost:9200/_search",
+                    Fetch.RequestInit.make(
+                        ~method_=Post,
+                        ~body=Js.Dict.fromList([
+                            ("query", serializeQuery(query))
+                        ])
+                        |> Js.Json.object_
+                        |> Js.Json.stringify
+                        // |> (d) => {Js.Console.log(d); d}
+                        |> Fetch.BodyInit.make,
+                        ~headers=Fetch.HeadersInit.make({"Content-Type": "application/json"}),
+                        ()
+                    )
+                )
+                |> then_(Fetch.Response.status >> expect >> toBe(200) >> resolve)
+            )
         })
-    ] |> List.fold_left(
-        (_acc, query) => test("It should generate well formed queries", () => {
-            expect(true) |> toBe(true)
-        }),
-        ()
     )
 })

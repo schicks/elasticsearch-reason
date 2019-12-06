@@ -1,18 +1,7 @@
-# Basic Reason Template
+# BS-Elasticsearch
 
-Hello! This project allows you to quickly get started with Reason and BuckleScript. If you wanted a more sophisticated version, try the `react` template (`bsb -theme react -init .`).
+Well typed interface to the elasticsearch query dsl. Allows construction of queries as Reason types, which can be validated at compile time and produces javascript objects for querying that can be used through the elasticsearch-node package or directly through the rest interface.
 
-# Build
-```
-npm run build
-```
+## Running Tests
 
-# Build + Watch
-
-```
-npm run start
-```
-
-
-# Editor
-If you use `vscode`, Press `Windows + Shift + B` it will build automatically
+The tests rely on a local version of elasticsearch running in docker. To start the local elasticsearch, run `docker-compose up` and wait until elasticsearch is responding at `http://localhost:9200`. Then run `npm test`.
