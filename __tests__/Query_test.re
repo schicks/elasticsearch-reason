@@ -35,6 +35,29 @@ describe("Query construction", () => {
                 ...MultiMatchBehavior.Most.noOptions,
                 fuzziness: Some(Primitives.Auto)
             })
+        }),
+        Boolean({ // the big one
+            ...emptyBoolean,
+            filter: [MatchAll],
+            should: [
+                DisMax({
+                    queries: [
+                        match(basicQuery),
+                        MultiMatch({
+                            query: "python",
+                            fields: [{name: "csTitle", weight: positiveNumber(7.)}],
+                            behavior: None
+                        })
+                    ],
+                    tie_breaker: None
+                })
+            ],
+            minimum_should_match: Primitives.(
+                Some(MultipleCombination([
+                    (Positive(2), Number(2)),
+                    (Positive(7), Percentage(34))
+                ]))
+            )
         })
     ] |> each(
         (query) => testPromise("It should generate well formed queries", () => {

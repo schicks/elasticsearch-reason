@@ -5,6 +5,7 @@ type query =
     | MultiMatch(MultiMatchQuery.content)
     | Boolean(booleanContent)
     | DisMax(disMaxContent)
+    | MatchAll
 and disMaxContent = {
     queries: list(query),
     tie_breaker: option(positiveNumber)
@@ -39,6 +40,8 @@ let boolean = ( // Worth creating, but not convinced that this would ever be a b
     minimum_should_match
 })
 
+let empty_object: Js.Dict.t(Js.Json.t) = Js.Dict.empty()
+
 let match = (~options=MatchQuery.noOptions, required) => Match(MatchQuery.{required, options})
 
 let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
@@ -46,6 +49,7 @@ let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | DisMax(content) => serializeDisMax(content)
     | Match(content) => MatchQuery.serialize(content)
     | MultiMatch(content) => MultiMatchQuery.serialize(content)
+    | MatchAll => Js.Dict.fromList([("match_all", Js.Json.object_(empty_object))]) |> Js.Json.object_
 } 
 and serializeBoolean = (content) => [
         ("must", content.must),
