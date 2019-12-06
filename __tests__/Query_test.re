@@ -16,7 +16,13 @@ describe("Query construction", () => {
 
     [
         match(basicQuery),
-        match(~options={...MatchQuery.noOptions, operator: Some(And)}, basicQuery),
+        match(
+            ~options={
+                ...MatchQuery.noOptions, 
+                operator: Some(And)
+            },
+            basicQuery
+        ),
         Boolean({
             should: [match(basicQuery)],
             must: [],
