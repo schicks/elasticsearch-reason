@@ -64,5 +64,5 @@ let serializeZeroTermsBehavior = (q) => switch (q) {
     | All => Js.Json.string("all")
 }
 
-let serializeMaxExpansions = unwrapInt >> Belt.Int.toFloat >> Js.Json.number
-let serializePrefixLength = unwrapInt >> Belt.Int.toFloat >> Js.Json.number
+let serializePositiveInt = unwrapInt >> Belt.Int.toFloat >> Js.Json.number
+let serializeTieBreaker = unwrapNumber >> Js.Json.number

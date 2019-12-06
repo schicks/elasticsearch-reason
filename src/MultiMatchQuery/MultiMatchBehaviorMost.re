@@ -32,8 +32,8 @@ module Most = {
             ("rewrite", Belt.Option.map(options.rewrite, serializeRewrite)),
             ("analyzer", Belt.Option.map(options.analyzer, Js.Json.string)),
             ("fuzziness", Belt.Option.map(options.fuzziness, serializeLevenshtein)),
-            ("max_expansions", Belt.Option.map(options.max_expansions, serializeMaxExpansions)),
-            ("prefix_length", Belt.Option.map(options.prefix_length, serializePrefixLength)),
+            ("max_expansions", Belt.Option.map(options.max_expansions, serializePositiveInt)),
+            ("prefix_length", Belt.Option.map(options.prefix_length, serializePositiveInt)),
             ("lenient", Belt.Option.map(options.lenient, Js.Json.boolean)),
             ("operator", Belt.Option.map(options.operator, serializeOperator)),
             ("minimum_should_match", Belt.Option.map(options.minimum_should_match, serializeMsm)),
@@ -42,6 +42,6 @@ module Most = {
         |> List.fold_left((acc, a) => switch (a) {
             | (key, Some(el)) => [(key, el), ...acc]
             | (_, None) => acc
-        }, [("type", Js.Json.string("most_fields"))])
+        }, [])
     }
 }
