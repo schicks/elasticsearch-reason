@@ -3,14 +3,11 @@ open MultiMatchBehavior
 
 
 // https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
-type field = {
-    name: string,
-    weight: option(positiveNumber) // 1
-}
+type field = (string, option(positiveNumber))
 
-let serializeField = (f) => switch(f.weight) {
-    | None => f.name
-    | Some(Positive(n)) => f.name ++ "^" ++ Belt.Float.toString(n)
+let serializeField = ((name, weight)) => switch(weight) {
+    | None => name
+    | Some(Positive(n)) => name ++ "^" ++ Belt.Float.toString(n)
 }
 
 type content = {

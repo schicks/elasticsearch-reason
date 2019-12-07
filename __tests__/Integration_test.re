@@ -28,7 +28,7 @@ describe("Query construction", () => {
         }),
         MultiMatch({
             query: "python",
-            fields: [{name: "csTitle", weight: positiveNumber(7.)}],
+            fields: [("csTitle", positiveNumber(7.))],
             behavior: MultiMatchBehavior.most({
                 ...MultiMatchBehavior.Most.noOptions,
                 fuzziness: Some(Primitives.Auto)
@@ -43,7 +43,7 @@ describe("Query construction", () => {
                         match(basicQuery),
                         MultiMatch({
                             query: "python",
-                            fields: [{name: "csTitle", weight: positiveNumber(7.)}],
+                            fields: [("csTitle", positiveNumber(7.))],
                             behavior: None
                         })
                     ],
