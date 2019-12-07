@@ -37,24 +37,21 @@ let noOptions = {
     zero_terms_query: None
 }
 
-type content = {
-    required: requiredParams,
-    options: optionalParams
-}
+type content = (requiredParams, optionalParams)
 
-let serialize = (match: content) => [
-    ("analyzer", Belt.Option.map(match.options.analyzer, Js.Json.string)),
-    ("auto_generate_synonyms_phrase_query", Belt.Option.map(match.options.auto_generate_synonyms_phrase_query, Js.Json.boolean)),
-    ("fuzzy_transpositions", Belt.Option.map(match.options.fuzzy_transpositions, Js.Json.boolean)),
-    ("fuzziness", Belt.Option.map(match.options.fuzziness, Primitives.serializeLevenshtein)),
-    ("max_expansions", Belt.Option.map(match.options.max_expansions, Primitives.serializePositiveInt)),
-    ("prefix_length", Belt.Option.map(match.options.prefix_length, Primitives.serializePositiveInt)),
-    ("transpositions", Belt.Option.map(match.options.transpositions, Js.Json.boolean)),
-    ("fuzzy_rewrite", Belt.Option.map(match.options.fuzzy_rewrite, Primitives.serializeRewrite)),
-    ("lenient", Belt.Option.map(match.options.lenient, Js.Json.boolean)),
-    ("operator", Belt.Option.map(match.options.operator, Primitives.serializeOperator)),
-    ("minimum_should_match", Belt.Option.map(match.options.minimum_should_match, Primitives.serializeMsm)),
-    ("zero_terms_query", Belt.Option.map(match.options.zero_terms_query, Primitives.serializeZeroTermsBehavior)),
+let serialize = ((required, options): content) => [
+    ("analyzer", Belt.Option.map(options.analyzer, Js.Json.string)),
+    ("auto_generate_synonyms_phrase_query", Belt.Option.map(options.auto_generate_synonyms_phrase_query, Js.Json.boolean)),
+    ("fuzzy_transpositions", Belt.Option.map(options.fuzzy_transpositions, Js.Json.boolean)),
+    ("fuzziness", Belt.Option.map(options.fuzziness, Primitives.serializeLevenshtein)),
+    ("max_expansions", Belt.Option.map(options.max_expansions, Primitives.serializePositiveInt)),
+    ("prefix_length", Belt.Option.map(options.prefix_length, Primitives.serializePositiveInt)),
+    ("transpositions", Belt.Option.map(options.transpositions, Js.Json.boolean)),
+    ("fuzzy_rewrite", Belt.Option.map(options.fuzzy_rewrite, Primitives.serializeRewrite)),
+    ("lenient", Belt.Option.map(options.lenient, Js.Json.boolean)),
+    ("operator", Belt.Option.map(options.operator, Primitives.serializeOperator)),
+    ("minimum_should_match", Belt.Option.map(options.minimum_should_match, Primitives.serializeMsm)),
+    ("zero_terms_query", Belt.Option.map(options.zero_terms_query, Primitives.serializeZeroTermsBehavior)),
 ]
 |> List.fold_left((acc, a) => switch (a) {
     | (key, Some(el)) => [(key, el), ...acc]
@@ -65,9 +62,9 @@ let serialize = (match: content) => [
         (
             "match", 
             Js.Dict.fromList([(
-                match.required.field, 
+                required.field, 
                 Js.Dict.fromList([
-                    ("query", Js.Json.string(match.required.query)),
+                    ("query", Js.Json.string(required.query)),
                     ...options
                 ]) |> Js.Json.object_
             )]) |> Js.Json.object_

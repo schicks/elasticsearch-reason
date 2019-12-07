@@ -59,7 +59,7 @@ let boolean = ( // Worth creating, but not convinced that this would ever be a b
 
 let empty_object: Js.Dict.t(Js.Json.t) = Js.Dict.empty()
 
-let match = (~options=MatchQuery.noOptions, required) => Match(MatchQuery.{required, options})
+let match = (~options=MatchQuery.noOptions, required) => Match((required, options))
 
 let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Boolean(content) => serializeBoolean(content)
