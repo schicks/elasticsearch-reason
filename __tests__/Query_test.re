@@ -4,7 +4,7 @@ open Domain;
 open Jest;
 open Query;
 
-let basicQuery = MatchQuery.{
+let basicQuery: MatchQuery.requiredParams = {
             query: "python",
             field: "csTitle"
         }
@@ -58,16 +58,13 @@ describe("Query construction", () => {
             )
         })
     ] |> each(
-        (query) => testPromise("It should generate well formed queries", () => {
+        (q) => testPromise("It should generate well formed queries", () => {
             Js.Promise.(
                 Fetch.fetchWithInit(
                     "http://localhost:9200/_search",
                     Fetch.RequestInit.make(
                         ~method_=Post,
-                        ~body=Js.Dict.fromList([
-                            ("query", serializeQuery(query))
-                        ])
-                        |> Js.Json.object_
+                        ~body=Body.serializeBody(Just({query: q}))
                         |> Js.Json.stringify
                         // |> (d) => {Js.Console.log(d); d}
                         |> Fetch.BodyInit.make,
