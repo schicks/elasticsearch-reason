@@ -18,17 +18,17 @@ describe("Query construction", () => {
             terms: ["1", "2", "3"],
             boost: Some(Positive(7.))
         }),
-        match(basicQuery),
-        match(
-            ~options={
+        Match((basicQuery, MatchQuery.noOptions)),
+        Match((
+            basicQuery,
+            {
                 ...MatchQuery.noOptions, 
                 operator: Some(And)
-            },
-            basicQuery
-        ),
-        Boolean({...emptyBoolean, should: [match(basicQuery)]}),
+            }
+        )),
+        Boolean({...emptyBoolean, should: [Match((basicQuery, MatchQuery.noOptions))]}),
         DisMax({
-            queries: [match(basicQuery)],
+            queries: [Match((basicQuery, MatchQuery.noOptions))],
             tie_breaker: None
         }),
         MultiMatch({
@@ -45,7 +45,7 @@ describe("Query construction", () => {
             should: [
                 DisMax({
                     queries: [
-                        match(basicQuery),
+                        Match((basicQuery, MatchQuery.noOptions)),
                         MultiMatch({
                             query: "python",
                             fields: [("csTitle", positiveNumber(7.))],
@@ -87,15 +87,15 @@ describe("complex bodies", () => {
     open Expect;
     [
         Body.Rescoring(
-            {query: match(basicQuery)},
-            [{window_size: Positive(10), score_mode: Multiply, query: match(basicQuery)}]
+            {query: Match((basicQuery, MatchQuery.noOptions))},
+            [{window_size: Positive(10), score_mode: Multiply, query: Match((basicQuery, MatchQuery.noOptions))}]
         ),
         Body.Sorting(
-            {query: match(basicQuery)},
+            {query: Match((basicQuery, MatchQuery.noOptions))},
             [Score]
         ),
         Body.Sorting(
-            {query: match(basicQuery)},
+            {query: Match((basicQuery, MatchQuery.noOptions))},
             [Field("csTitle"), Score]
         )
     ] |> each((b) => testPromise("It should generate well formed bodies", () => {
