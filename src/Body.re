@@ -22,14 +22,16 @@ type rescore = {
 }
 let serializeRescore = ({query, window_size, score_mode}) => Js.Dict.fromList([
     ("window_size", Primitives.serializePositiveInt(window_size)),
-    ("query", Js.Json.object_(Js.Dict.fromList([("rescore_query", Query.serializeQuery(query))]))),
-    ("score_mode", switch (score_mode) {
+    ("query", Js.Json.object_(Js.Dict.fromList([
+        ("score_mode", switch (score_mode) {
                 | Average => "avg"
                 | Max => "max"
                 | Min => "min"
                 | Multiply => "multiply"
                 | Total => "total"
-            } |> Js.Json.string)
+            } |> Js.Json.string),
+        ("rescore_query", Query.serializeQuery(query))
+    ])))
 ]) |> Js.Json.object_
 
 type bodyContent = {
