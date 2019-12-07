@@ -13,6 +13,11 @@ describe("Query construction", () => {
     open Expect;
 
     [
+        Terms({
+            field: "_id",
+            terms: ["1", "2", "3"],
+            boost: Some(Positive(7.))
+        }),
         match(basicQuery),
         match(
             ~options={

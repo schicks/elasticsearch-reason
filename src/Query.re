@@ -7,12 +7,13 @@ type nestedScoreMode =
     | Zero // Renamed from None for type sanity
     | Sum
 type nestedOptions = {
-    score_mode: option(nestedScoreMode),
-    ignore_unmapped: option(bool)
+    score_mode: nestedScoreMode,
+    ignore_unmapped: bool
 }
 
 type query =
     | Match(MatchQuery.content)
+    | Terms(TermsQuery.content)
     | MultiMatch(MultiMatchQuery.content)
     | Boolean(booleanContent)
     | DisMax(disMaxContent)
@@ -65,6 +66,7 @@ let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Boolean(content) => serializeBoolean(content)
     | DisMax(content) => serializeDisMax(content)
     | Match(content) => MatchQuery.serialize(content)
+    | Terms(content) => TermsQuery.serialize(content)
     | MultiMatch(content) => MultiMatchQuery.serialize(content)
     | MatchAll => Js.Dict.fromList([("match_all", Js.Json.object_(empty_object))]) |> Js.Json.object_
     | Nested(content) => serializeNested(content)
@@ -112,19 +114,17 @@ and serializeDisMax = (q) => {
 and serializeNested = (q) => {
     let required = [("query", serializeQuery(q.query))]
     let content = switch (q.options) {
-        | Some(queryOptions) => [
-            ("ignore_unmapped", Belt.Option.map(queryOptions.ignore_unmapped, Js.Json.boolean)),
-            ("score_mode", Belt.Option.map(queryOptions.score_mode, (a) => switch (a) {
+        | Some({ignore_unmapped, score_mode}) => [
+            ("ignore_unmapped", Js.Json.boolean(ignore_unmapped)),
+            ("score_mode", switch (score_mode) {
                 | Average => "avg"
                 | Max => "max"
                 | Min => "min"
                 | Zero => "none"
                 | Sum => "sum"
-            } |> Js.Json.string))
-        ] |> List.fold_left((acc, (key, v)) => switch (v) {
-            | Some(value) => [(key, value), ...acc]
-            | None => acc
-        }, required)
+            } |> Js.Json.string),
+            ...required
+        ]
         | None => required
     } |> Js.Dict.fromList |> Js.Json.object_
     Js.Dict.fromList([
