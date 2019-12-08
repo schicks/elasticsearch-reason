@@ -47,6 +47,38 @@ and booleanContent = {
     minimum_should_match: option(Primitives.msmExpression)
 }
 
+let cataQuery = (
+    fnMatch,
+    fnTerms,
+    fnMultiMatch,
+    fnFunctionScore,
+    fnBoolean,
+    fnDisMax,
+    fnNested,
+    fnMatchAll
+) => {
+    let rec applied = (q) => switch(q) {
+    | Match(content) => fMatch(content)
+    | Terms(content) => fTerms(content)
+    | MultiMatch(content) => fMultiMatch(content)
+    | FunctionScore(content) => fFunctionScore(content)
+    | Boolean(content) => fBoolean(content)
+    | DisMax(content) => fDisMax(content)
+    | Nested(content) => fNested(content)
+    | MatchAll => fMatchAll()
+    }
+    and fMatch = fnMatch(_)
+    and fTerms = fnTerms(_)
+    and fMultiMatch = fnMultiMatch(_)
+    and fFunctionScore = fnFunctionScore(applied, _)
+    and fBoolean = fnBoolean(applied, _)
+    and fDisMax = fnDisMax(applied, _)
+    and fNested = fnNested(applied, _)
+    and fMatchAll = fnMatchAll
+
+    applied
+}
+
 let emptyBoolean = {
     must: [],
     filter: [],
@@ -54,36 +86,12 @@ let emptyBoolean = {
     must_not: [],
     minimum_should_match: None
 }
-let boolean = ( // Worth creating, but not convinced that this would ever be a better api than straight record creation
-    ~must=[],
-    ~filter=[],
-    ~should=[],
-    ~must_not=[],
-    ~minimum_should_match=None,
-    ()
-) => Boolean({
-    must,
-    filter,
-    should,
-    must_not,
-    minimum_should_match
-})
-
-let empty_object: Js.Dict.t(Js.Json.t) = Js.Dict.empty()
 
 let match = (~options=MatchQuery.noOptions, required) => Match((required, options))
 
-let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
-    | Boolean(content) => serializeBoolean(content)
-    | DisMax(content) => serializeDisMax(content)
-    | FunctionScore(content) => serializeFunctionScore(content)
-    | Match(content) => MatchQuery.serialize(content)
-    | Terms(content) => TermsQuery.serialize(content)
-    | MultiMatch(content) => MultiMatchQuery.serialize(content)
-    | MatchAll => Js.Dict.fromList([("match_all", Js.Json.object_(empty_object))]) |> Js.Json.object_
-    | Nested(content) => serializeNested(content)
-} 
-and serializeBoolean = (content) => [
+let serializeMatchAll = () => Domain.fromPairs([("match_all", Js.Json.object_(Js.Dict.empty()))])
+
+let serializeBoolean = (serializeQuery, content) => [
         ("must", content.must),
         ("filter", content.filter),
         ("should", content.should),
@@ -105,7 +113,7 @@ and serializeBoolean = (content) => [
             ("bool", content)
         ]) |> Js.Json.object_
     }
-and serializeDisMax = (q) => {
+let serializeDisMax = (serializeQuery, q) => {
     let queries = (
         "queries",
         q.queries |> List.map(serializeQuery) |> Array.of_list |> Js.Json.array
@@ -120,7 +128,7 @@ and serializeDisMax = (q) => {
         ("dis_max", content)
     ]) |> Js.Json.object_
 }
-and serializeNested = (q) => {
+let serializeNested = (serializeQuery, q: nestedContent) => {
     let required = [("query", serializeQuery(q.query))]
     let content = switch (q.options) {
         | Some({ignore_unmapped, score_mode}) => [
@@ -140,7 +148,22 @@ and serializeNested = (q) => {
         ("nested", content)
     ]) |> Js.Json.object_
 }
-and serializeFunctionScore = ({query, boost, functions}) => {
+
+let serializeFunctionScore = (serializeQuery, {query, boost, functions}) => {
+    let serializeFunc = ({filter, func, weight}) => [
+        switch(filter) {
+        | None => None
+        | Some(f) => Some(("filter", serializeQuery(f)))
+        },
+        switch(weight) {
+        | None => None
+        | Some(Positive(w)) => Some(("weight", Js.Json.number(w)))
+        }
+    ] 
+    |> filterNone(~base=[FunctionScore.format(func)])
+    |> Js.Dict.fromList
+    |> Js.Json.object_
+
     let body = Js.Dict.fromList([
         ("query", serializeQuery(query)),
         ("boost", switch (boost) {
@@ -154,17 +177,14 @@ and serializeFunctionScore = ({query, boost, functions}) => {
         ("function_score", body)
     ]) |> Js.Json.object_
 }
-and serializeFunc = ({filter, func, weight}) => [
-    switch(filter) {
-    | None => None
-    | Some(f) => Some(("filter", serializeQuery(f)))
-    },
-    switch(weight) {
-    | None => None
-    | Some(Positive(w)) => Some(("weight", Js.Json.number(w)))
-    }
-] 
-|> filterNone(~base=[FunctionScore.format(func)])
-|> Js.Dict.fromList
-|> Js.Json.object_
-        
+
+let serializeQuery: (query) => Js.Json.t = cataQuery(
+    MatchQuery.serialize,
+    TermsQuery.serialize,
+    MultiMatchQuery.serialize,
+    serializeFunctionScore,
+    serializeBoolean,
+    serializeDisMax,
+    serializeNested,
+    serializeMatchAll
+)
