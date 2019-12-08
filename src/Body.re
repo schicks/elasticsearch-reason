@@ -30,7 +30,7 @@ let serializeRescore = ({query, window_size, score_mode}) => Js.Dict.fromList([
                 | Multiply => "multiply"
                 | Total => "total"
             } |> Js.Json.string),
-        ("rescore_query", Query.serializeQuery(query))
+        ("rescore_query", Serialize.serializeQuery(query))
     ])))
 ]) |> Js.Json.object_
 
@@ -47,7 +47,7 @@ let serializeBody = (b) => {
     let queryEntry = (
         "query", 
         switch(b) {
-        | Just({query}) | Rescoring({query}, _) | Sorting({query}, _) => Query.serializeQuery(query)
+        | Just({query}) | Rescoring({query}, _) | Sorting({query}, _) => Serialize.serializeQuery(query)
         }
     )
 

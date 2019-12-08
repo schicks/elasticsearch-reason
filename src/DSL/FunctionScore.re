@@ -71,7 +71,6 @@ let serializeDecay = ({origin, scale, offset, decay}, field) => {
     
     Domain.fromPairs([(field, serializedConf)])
 }
-
 type scoringFunction = 
 | Weight(Domain.positiveNumber)
 | Random(randomConfig)
@@ -79,12 +78,3 @@ type scoringFunction =
 | GaussianDecay(string, decayConfig)
 | LinearDecay(string, decayConfig)
 | ExponentialDecay(string, decayConfig)
-
-let format = (func) => switch(func) {
-| Weight(Positive(n)) => ("weight", Js.Json.number(n))
-| Random(rc) => ("random_score", serializeRandom(rc))
-| Field(field, conf) => ("field_value_factor", serializeFieldFactor(conf, field))
-| GaussianDecay(field, conf) => ("gaussian", serializeDecay(conf, field))
-| LinearDecay(field, conf) => ("linear", serializeDecay(conf, field))
-| ExponentialDecay(field, conf) => ("exp", serializeDecay(conf, field))
-}
