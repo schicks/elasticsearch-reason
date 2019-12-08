@@ -23,9 +23,6 @@ module Phrase = {
             ("zero_terms_query", Belt.Option.map(options.zero_terms_query, serializeZeroTermsBehavior)),
             ("slop", Belt.Option.map(options.slop, serializePositiveInt))
         ]
-        |> List.fold_left((acc, a) => switch (a) {
-            | (key, Some(el)) => [(key, el), ...acc]
-            | (_, None) => acc
-        }, [])
+        |> Domain.filterNoneSnd
     }
 }

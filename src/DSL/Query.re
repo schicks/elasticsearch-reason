@@ -15,10 +15,21 @@ type query =
     | Match(MatchQuery.content)
     | Terms(TermsQuery.content)
     | MultiMatch(MultiMatchQuery.content)
+    | FunctionScore(functionScoreContent)
     | Boolean(booleanContent)
     | DisMax(disMaxContent)
     | Nested(nestedContent)
     | MatchAll
+and func = {
+    filter: option(query),
+    func: FunctionScore.scoringFunction,
+    weight: option(positiveNumber)
+}
+and functionScoreContent = {
+    query: query,
+    boost: option(positiveNumber),
+    functions: list(func)
+}
 and nestedContent = {
     query: query,
     path: string,
@@ -65,6 +76,7 @@ let match = (~options=MatchQuery.noOptions, required) => Match((required, option
 let rec serializeQuery = (q:query): Js.Json.t => switch (q) {
     | Boolean(content) => serializeBoolean(content)
     | DisMax(content) => serializeDisMax(content)
+    | FunctionScore(content) => serializeFunctionScore(content)
     | Match(content) => MatchQuery.serialize(content)
     | Terms(content) => TermsQuery.serialize(content)
     | MultiMatch(content) => MultiMatchQuery.serialize(content)
@@ -81,10 +93,7 @@ and serializeBoolean = (content) => [
         | [] => None
         | items => Some((key, Array.of_list(items) |> Array.map(serializeQuery) |> Js.Json.array))
     })
-    |> List.fold_left((acc, a) => switch (a) {
-        | Some(el) => [el, ...acc]
-        | None => acc
-    }, [])
+    |> Domain.filterNone
     |> (els) => switch (content.minimum_should_match) {
         | Some(msm) => [("minimum_should_match", Primitives.serializeMsm(msm)), ...els]
         | None => els
@@ -131,3 +140,31 @@ and serializeNested = (q) => {
         ("nested", content)
     ]) |> Js.Json.object_
 }
+and serializeFunctionScore = ({query, boost, functions}) => {
+    let body = Js.Dict.fromList([
+        ("query", serializeQuery(query)),
+        ("boost", switch (boost) {
+            | None => 1.
+            | Some(Positive(n)) => n
+        } |> Js.Json.number),
+        ("functions", functions |> List.map(serializeFunc) |> Array.of_list|> Js.Json.array)
+    ]) |> Js.Json.object_
+
+    Js.Dict.fromList([
+        ("function_score", body)
+    ]) |> Js.Json.object_
+}
+and serializeFunc = ({filter, func, weight}) => [
+    switch(filter) {
+    | None => None
+    | Some(f) => Some(("filter", serializeQuery(f)))
+    },
+    switch(weight) {
+    | None => None
+    | Some(Positive(w)) => Some(("weight", Js.Json.number(w)))
+    }
+] 
+|> filterNone(~base=[FunctionScore.format(func)])
+|> Js.Dict.fromList
+|> Js.Json.object_
+        

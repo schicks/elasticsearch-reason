@@ -38,9 +38,6 @@ module BoolPrefix = {
             ("lenient", Belt.Option.map(options.lenient, Js.Json.boolean)),
             ("zero_terms_query", Belt.Option.map(options.zero_terms_query, serializeZeroTermsBehavior)),
         ]
-        |> List.fold_left((acc, a) => switch (a) {
-            | (key, Some(el)) => [(key, el), ...acc]
-            | (_, None) => acc
-        }, [])
+        |> Domain.filterNoneSnd
     }
 }

@@ -29,9 +29,6 @@ module Cross = {
             ("zero_terms_query", Belt.Option.map(options.zero_terms_query, serializeZeroTermsBehavior)),
             ("tie_breaker", Belt.Option.map(options.tie_breaker, serializeTieBreaker))
         ]
-        |> List.fold_left((acc, a) => switch (a) {
-            | (key, Some(el)) => [(key, el), ...acc]
-            | (_, None) => acc
-        }, [])
+        |> Domain.filterNoneSnd
     }
 }

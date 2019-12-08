@@ -53,10 +53,7 @@ let serialize = ((required, options): content) => [
     ("minimum_should_match", Belt.Option.map(options.minimum_should_match, Primitives.serializeMsm)),
     ("zero_terms_query", Belt.Option.map(options.zero_terms_query, Primitives.serializeZeroTermsBehavior)),
 ]
-|> List.fold_left((acc, a) => switch (a) {
-    | (key, Some(el)) => [(key, el), ...acc]
-    | (_, None) => acc
-}, [])
+|> Domain.filterNoneSnd
 |> (options) => {
     Js.Dict.fromList([
         (
