@@ -2,7 +2,7 @@ let format = (func) => FunctionScore.(switch(func) {
 | Weight(Positive(n)) => ("weight", Js.Json.number(n))
 | Random(rc) => ("random_score", serializeRandom(rc))
 | Field(field, conf) => ("field_value_factor", serializeFieldFactor(conf, field))
-| GaussianDecay(field, conf) => ("gaussian", serializeDecay(conf, field))
+| GaussianDecay(field, conf) => ("gauss", serializeDecay(conf, field))
 | LinearDecay(field, conf) => ("linear", serializeDecay(conf, field))
 | ExponentialDecay(field, conf) => ("exp", serializeDecay(conf, field))
 })

@@ -48,12 +48,14 @@ let serializeHighlight = ({pre_tags, post_tags, fields}) => fromPairs([
 type options = {
     size: option(positiveInt),
     from: option(positiveInt),
-    highlight: option(highlight)
+    highlight: option(highlight),
+    aggregations: list(Aggregation.aggregation)
 }
 let noOptions = {
     size: None,
     from: None,
-    highlight: None
+    highlight: None,
+    aggregations: []
 }
 type bodyContent = {
     query: Query.query,
@@ -76,6 +78,10 @@ let serializeBody = (b) => {
         switch(o.from) {
         | None => None
         | Some(n) => Some(("from", Primitives.serializePositiveInt(n)))
+        },
+        switch(o.aggregations) {
+        | [] => None
+        | aggs => Some(("aggs", List.map(Aggregation.format, aggs) |> fromPairs))
         }
     ]
     }

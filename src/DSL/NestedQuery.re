@@ -2,6 +2,7 @@ let serialize = (serializeQuery, q: Query.nestedContent) => {
     let required = [("query", serializeQuery(q.query))]
     let content = switch (q.options) {
         | Some({ignore_unmapped, score_mode}) => [
+            ("path", Js.Json.string(q.path)),
             ("ignore_unmapped", Js.Json.boolean(ignore_unmapped)),
             ("score_mode", switch (score_mode) {
             | Average => "avg"

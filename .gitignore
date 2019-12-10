@@ -1,4 +1,5 @@
 src/Examples.re
+__tests__/Pluralsight_test.re
 .DS_Store
 .merlin
 .bsb.lock
