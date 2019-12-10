@@ -24,8 +24,8 @@ let serialize = (serializeQuery, {query, boost, functions}: Query.functionScoreC
     let body = Js.Dict.fromList([
         ("query", serializeQuery(query)),
         ("boost", switch (boost) {
-            | None => 1.
-            | Some(Positive(n)) => n
+        | None => 1.
+        | Some(Positive(n)) => n
         } |> Js.Json.number),
         ("functions", functions |> List.map(innerSerialize) |> Array.of_list|> Js.Json.array)
     ]) |> Js.Json.object_

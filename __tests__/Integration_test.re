@@ -69,7 +69,7 @@ describe("Query construction", () => {
                     "http://localhost:9200/_search",
                     Fetch.RequestInit.make(
                         ~method_=Post,
-                        ~body=Body.serializeBody(Just({query: q}))
+                        ~body=Body.serializeBody(Just({query: q, options: None}))
                         |> Js.Json.stringify
                         // |> (d) => {Js.Console.log(d); d}
                         |> Fetch.BodyInit.make,
@@ -87,15 +87,15 @@ describe("complex bodies", () => {
     open Expect;
     [
         Body.Rescoring(
-            {query: Match((basicQuery, MatchQuery.noOptions))},
+            {query: Match((basicQuery, MatchQuery.noOptions)), options: None},
             [{window_size: Positive(10), score_mode: Multiply, query: Match((basicQuery, MatchQuery.noOptions))}]
         ),
         Body.Sorting(
-            {query: Match((basicQuery, MatchQuery.noOptions))},
+            {query: Match((basicQuery, MatchQuery.noOptions)), options: None},
             [Score]
         ),
         Body.Sorting(
-            {query: Match((basicQuery, MatchQuery.noOptions))},
+            {query: Match((basicQuery, MatchQuery.noOptions)), options: None},
             [Field("csTitle"), Score]
         )
     ] |> each((b) => testPromise("It should generate well formed bodies", () => {
